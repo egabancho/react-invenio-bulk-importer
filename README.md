@@ -120,6 +120,41 @@ import { BulkImporter } from '@ubiquitypress/react-invenio-bulk-importer';
 <BulkImporter.TaskDetails taskId="task-123" />
 ```
 
+#### CSV export controls
+Export a single Invenio record with the bulk CSV media type:
+
+```jsx
+import { BulkImporter } from '@ubiquitypress/react-invenio-bulk-importer';
+
+<BulkImporter.ExportRecordButton recordId="jvybz-9q277" />
+```
+
+Task record rows also expose single-record export from the row **Actions**
+menu when the importer record has a generated or existing Invenio record ID.
+
+For record search pages, enable the search export button:
+
+```jsx
+<BulkImporter.Search
+  config={{
+    searchApi: {
+      axios: {
+        url: '/api/records',
+        withCredentials: true
+      }
+    },
+    showImportModal: false,
+    showExportButton: true
+  }}
+/>
+```
+
+By default the export request first tries
+`application/vnd.inveniordm.v1.bulk+csv`. If the API returns `406 Not
+Acceptable`, it falls back to InvenioRDM's built-in CSV formats:
+`application/vnd.inveniordm.v1.full+csv`, then
+`application/vnd.inveniordm.v1.simple+csv`.
+
 ## Styling
 
 This library uses PandaCSS for styling, which provides:
@@ -187,4 +222,3 @@ This project uses:
 - **TypeScript** for type safety
 - **PandaCSS** for styling
 - **Semantic UI React** for base components
-

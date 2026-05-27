@@ -19,5 +19,18 @@ export const styles = {
   errorIcon: css({
     marginInlineStart: '0.5rem !important',
     cursor: 'help'
+  }),
+  exportErrorIcon: css({
+    cursor: 'help'
+  }),
+  actionsCell: css({
+    whiteSpace: 'nowrap'
+  }),
+  actionsContainer: css({
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: '0.5rem',
+    flexWrap: 'wrap'
   })
 };

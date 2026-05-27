@@ -38,6 +38,16 @@ export const defaultSearchConfig: SearchConfig = {
       }
     ]
   },
+  exportApi: {
+    accept: 'application/vnd.inveniordm.v1.bulk+csv',
+    fallbackAccepts: [
+      'application/vnd.inveniordm.v1.full+csv',
+      'application/vnd.inveniordm.v1.simple+csv'
+    ],
+    filename: 'records-export.csv',
+    includePagination: false,
+    url: '/api/records'
+  },
   searchApi: {
     axios: {
       headers: {
@@ -61,5 +71,6 @@ export const defaultSearchConfig: SearchConfig = {
     }
   ],
   sortOrderDisabled: true,
+  showExportButton: false,
   resultPath: '/administration/importer-tasks'
 };
