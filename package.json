@@ -12,7 +12,7 @@
   "author": "Ubiquity Press",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubiquitypress/react-invenio-bulk-importer"
+    "url": "git+https://github.com/paradigm-publishing/react-invenio-bulk-importer.git"
   },
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.es.js",
