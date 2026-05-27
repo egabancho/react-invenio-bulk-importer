@@ -1,6 +1,6 @@
-import { runImporterRecord } from '@/services';
+import { exportRecord, runImporterRecord } from '@/services';
 import type { InvenioImporterRecord } from '@/types';
-import { capitalizeFirstLetter, getStatusColor } from '@/utils';
+import { capitalizeFirstLetter, downloadBlob, getStatusColor } from '@/utils';
 import React, { useState } from 'react';
 import {
   Button,
@@ -14,8 +14,11 @@ import {
 import { DetailsModal } from './details-modal';
 import { styles } from './task-record-item.styles';
 
+/** Props for rendering a single importer task record row. */
 export interface TaskRecordItemProps {
+  /** Importer record displayed by the table row. */
   result: InvenioImporterRecord;
+  /** Row index supplied by React-SearchKit. */
   index: number;
 }
 
@@ -28,11 +31,14 @@ export const TaskRecordItem: React.FC<TaskRecordItemProps> = ({
   );
   const [openDetailsModal, setOpenDetailsModal] = useState(false);
   const [detailsModalInitialTab, setDetailsModalInitialTab] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<Error | null>(null);
 
   if (!result) {
     return null;
   }
 
+  /** Copies the importer record ID to the clipboard and shows transient status. */
   const handleCopyId = async () => {
     try {
       setCopyState('copying');
@@ -48,12 +54,16 @@ export const TaskRecordItem: React.FC<TaskRecordItemProps> = ({
 
   const hasErrors = result.errors && result.errors.length > 0;
   const statusColor = getStatusColor(result.status);
+  const exportRecordId =
+    result.generated_record_id || result.existing_record_id;
 
+  /** Returns the details-modal tab index for the errors tab. */
   const getErrorsTabIndex = () => {
     // Basic Info = 0, Source Data = 1, Errors = 2 (if exists), Files = last
     return hasErrors ? 2 : -1;
   };
 
+  /** Maps a Semantic UI label color to the matching status icon. */
   const getStatusIcon = (color: string) => {
     if (color === 'red') {
       return 'times';
@@ -64,6 +74,29 @@ export const TaskRecordItem: React.FC<TaskRecordItemProps> = ({
     return 'question';
   };
 
+  /** Exports the generated or existing Invenio record for this importer row. */
+  const handleExportRecord = async () => {
+    if (!exportRecordId) {
+      return;
+    }
+
+    setIsExporting(true);
+    setExportError(null);
+
+    try {
+      // The service handles media-type fallback; the row handles download state.
+      const { blob, filename } = await exportRecord(exportRecordId);
+      downloadBlob(blob, filename);
+    } catch (error) {
+      setExportError(
+        error instanceof Error ? error : new Error('Export failed')
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Build the menu from row state so unavailable actions are omitted entirely.
   const actionOptions = [
     ...(hasErrors
       ? [
@@ -76,6 +109,18 @@ export const TaskRecordItem: React.FC<TaskRecordItemProps> = ({
               setDetailsModalInitialTab(getErrorsTabIndex());
               setOpenDetailsModal(true);
             }
+          }
+        ]
+      : []),
+    ...(exportRecordId
+      ? [
+          {
+            key: 'export-record',
+            disabled: isExporting,
+            text: isExporting ? 'Exporting CSV...' : 'Export CSV',
+            value: 'export-record',
+            icon: 'download',
+            onClick: handleExportRecord
           }
         ]
       : []),
@@ -168,28 +213,45 @@ export const TaskRecordItem: React.FC<TaskRecordItemProps> = ({
       </TableCell>
 
       {/* Actions Column */}
-      <TableCell textAlign='right'>
-        <Dropdown
-          button
-          className='icon'
-          floating
-          labeled
-          icon='ellipsis horizontal'
-          text='Actions'
-          size='mini'
-        >
-          <Dropdown.Menu>
-            {actionOptions.map(option => (
-              <Dropdown.Item
-                key={option.key}
-                icon={option.icon}
-                text={option.text}
-                disabled={option.disabled}
-                onClick={option.onClick}
-              />
-            ))}
-          </Dropdown.Menu>
-        </Dropdown>
+      <TableCell className={styles.actionsCell} textAlign='right'>
+        <div className={styles.actionsContainer}>
+          {exportError && (
+            <Popup
+              content={exportError.message}
+              trigger={
+                <Icon
+                  name='exclamation triangle'
+                  color='red'
+                  className={styles.exportErrorIcon}
+                />
+              }
+              position='top center'
+              size='mini'
+            />
+          )}
+
+          <Dropdown
+            button
+            className='icon'
+            floating
+            labeled
+            icon='ellipsis horizontal'
+            text='Actions'
+            size='mini'
+          >
+            <Dropdown.Menu>
+              {actionOptions.map(option => (
+                <Dropdown.Item
+                  key={option.key}
+                  icon={option.icon}
+                  text={option.text}
+                  disabled={option.disabled}
+                  onClick={option.onClick}
+                />
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
+        </div>
 
         <DetailsModal
           record={result}

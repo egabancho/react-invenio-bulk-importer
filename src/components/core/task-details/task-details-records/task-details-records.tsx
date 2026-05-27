@@ -5,6 +5,7 @@ import { useTaskDetails } from '../provider';
 import { ResultTable } from './result-table';
 import { TaskRecordItem } from './task-record-item';
 
+/** Renders importer records scoped to the current task details page. */
 export const TaskDetailsRecords = () => {
   const { taskId } = useTaskDetails();
 
@@ -28,6 +29,8 @@ export const TaskDetailsRecords = () => {
           initialQueryState: {
             hiddenParams: [['q', `task.id:${taskId}`]]
           },
+          // Importer records are not public records, so only row actions export CSV.
+          showExportButton: false,
           showFacets: true,
           showImportModal: false
         }}

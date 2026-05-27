@@ -1,5 +1,6 @@
 export * from './capitalize-first-letter';
 export * from './cn';
+export * from './download-blob';
 export * from './file-utils';
 export * from './format-date';
 export * from './format-detail-value';
