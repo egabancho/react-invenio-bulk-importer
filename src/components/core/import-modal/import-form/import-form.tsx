@@ -19,15 +19,20 @@ export const ImportForm: React.FC<ImportFormProps> = ({ onSubmit }) => {
    */
   const handleSubmit = async (values: ImportFormValues) => {
     try {
-      await createCompleteTask(values.task, values.metadata, values.files, {
-        autoValidate: !!values.metadata,
-        onProgress(step, progress) {
-          setProgress({
-            [step]: progress
-          } as Record<OrchestrationSteps, number>);
+      const task = await createCompleteTask(
+        values.task,
+        values.metadata,
+        values.files,
+        {
+          autoValidate: !!values.metadata,
+          onProgress(step, progress) {
+            setProgress({
+              [step]: progress
+            } as Record<OrchestrationSteps, number>);
+          }
         }
-      });
-      onSubmit?.();
+      );
+      onSubmit?.(task);
     } catch (error) {
       console.error('Error creating import task:', error);
       throw error;

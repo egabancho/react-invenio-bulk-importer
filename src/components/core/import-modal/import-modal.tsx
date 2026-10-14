@@ -1,3 +1,4 @@
+import type { InvenioTask } from '@/types';
 import React, { useCallback, useState } from 'react';
 import {
   Button,
@@ -11,14 +12,17 @@ import { ImportForm } from './import-form';
 
 export const ImportModal = () => {
   const [open, setOpen] = useState(false);
-  const { refreshSearch } = useSearch();
+  const { config } = useSearch();
 
   // Callback to handle successful form submission
-  // Closes the modal and refreshes the search results
-  const handleSubmitSuccess = useCallback(() => {
-    refreshSearch();
-    setOpen(false);
-  }, [refreshSearch]);
+  // Closes the modal and opens the new task, where validation progress shows
+  const handleSubmitSuccess = useCallback(
+    (task: InvenioTask) => {
+      setOpen(false);
+      window.location.assign(`${config.resultPath}/${task.id}`);
+    },
+    [config.resultPath]
+  );
 
   return (
     <Modal

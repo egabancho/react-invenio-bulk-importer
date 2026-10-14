@@ -1,6 +1,6 @@
 import { Spinner } from '@/components/ui';
 import { useImporterTask } from '@/hooks';
-import type { InvenioTask } from '@/types';
+import { ImporterTaskStates, type InvenioTask } from '@/types';
 import React, { useEffect, useState } from 'react';
 import { Container, Icon, Message } from 'semantic-ui-react';
 import { TaskDetailsProvider } from './provider';
@@ -13,6 +13,13 @@ export interface TaskDetailsProps {
   taskId: string;
 }
 
+const STATUS_POLL_INTERVAL_MS = 3000;
+
+const IN_PROGRESS_STATES: string[] = [
+  ImporterTaskStates.VALIDATING,
+  ImporterTaskStates.IMPORTING
+];
+
 export const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId }) => {
   const [task, setTask] = useState<InvenioTask | null>(null);
   const { getStatus, isGettingStatus, runBulkImport, isBulkImporting, error } =
@@ -22,7 +29,20 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId }) => {
     getStatus();
   }, [getStatus]);
 
-  if (isGettingStatus || isBulkImporting) {
+  // Keep the status current while the backend is still working on the task.
+  const status = task?.status;
+  useEffect(() => {
+    if (!status || !IN_PROGRESS_STATES.includes(status)) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      getStatus();
+    }, STATUS_POLL_INTERVAL_MS);
+    return () => clearTimeout(timer);
+  }, [status, getStatus]);
+
+  // Only the first load replaces the page; later refreshes update it in place.
+  if ((isGettingStatus && !task) || isBulkImporting) {
     return <Spinner />;
   }
 

@@ -1,7 +1,7 @@
-import type { InvenioNewImportTask } from '@/types';
+import type { InvenioNewImportTask, InvenioTask } from '@/types';
 
 export interface ImportFormProps {
-  onSubmit?: () => void;
+  onSubmit?: (task: InvenioTask) => void;
 }
 
 export interface ImportFormValues {
