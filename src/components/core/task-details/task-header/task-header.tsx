@@ -109,7 +109,7 @@ export const TaskHeader: React.FC<TaskHeaderProps> = ({
                 />
               }
             />
-            <UploadMetadataModal />
+            <UploadMetadataModal serializer={task.serializer} />
             <Popup
               content='Start the import workflow for this task.'
               position='left center'

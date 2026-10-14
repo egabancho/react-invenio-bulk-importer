@@ -1,7 +1,11 @@
 import { FileUploader } from '@/components/core';
 import { ProgressLoading, Spinner } from '@/components/ui';
 import type { OrchestrationSteps } from '@/types';
-import { formatOptionLabel, getTaskOptionEntries } from '@/utils';
+import {
+  formatOptionLabel,
+  getMetadataFileFormat,
+  getTaskOptionEntries
+} from '@/utils';
 import React, { Fragment } from 'react';
 import {
   BooleanField,
@@ -40,6 +44,8 @@ export const FormContent: React.FC<FormContentProps> = ({ progress }) => {
   if (!configs || Object.keys(configs).length === 0) {
     return <p>No record types available.</p>;
   }
+
+  const metadataFormat = getMetadataFileFormat(values.task.serializer);
 
   return (
     <Fragment>
@@ -111,7 +117,7 @@ export const FormContent: React.FC<FormContentProps> = ({ progress }) => {
         <input
           id={'file-input'}
           type='file'
-          accept='.csv'
+          accept={metadataFormat.accept}
           onChange={handleFileChange}
           className={styles.fileInput}
         />
@@ -119,8 +125,8 @@ export const FormContent: React.FC<FormContentProps> = ({ progress }) => {
           <p className={styles.helpText}>Selected: {values.metadata.name}</p>
         )}
         <p className={styles.helpText}>
-          Upload a CSV file containing the records metadata to be imported or
-          deleted.
+          Upload a {metadataFormat.label} file containing the records metadata
+          to be imported or deleted.
         </p>
       </Form.Field>
 
