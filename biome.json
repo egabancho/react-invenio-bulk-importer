@@ -13,10 +13,9 @@
       "!**/node_modules",
       "!**/.storybook/styles.css",
       "!**/storybook-static",
-      "!**/yarn.lock",
+      "!**/pnpm-lock.yaml",
       "!**/build",
       "!**/.next",
-      "!**/.yarn",
       "!**/dist",
       "!**/.turbo",
       "!**/public",
@@ -33,7 +32,7 @@
     "lineWidth": 80,
     "attributePosition": "auto",
     "bracketSpacing": true,
-    "includes": ["**", "!**/node_modules", "!**/yarn.lock", "!**/build"]
+    "includes": ["**", "!**/node_modules", "!**/pnpm-lock.yaml", "!**/build"]
   },
   "assist": {
     "actions": {

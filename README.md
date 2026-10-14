@@ -18,8 +18,8 @@ This library provides a comprehensive set of React components for managing bulk 
 ## Installation
 
 ```bash
-# Using yarn (recommended)
-yarn add @ubiquitypress/react-invenio-bulk-importer
+# Using pnpm (recommended)
+pnpm add @ubiquitypress/react-invenio-bulk-importer
 
 # Using npm
 npm install @ubiquitypress/react-invenio-bulk-importer
@@ -30,7 +30,7 @@ npm install @ubiquitypress/react-invenio-bulk-importer
 Make sure you have the following peer dependencies installed:
 
 ```bash
-yarn add react react-dom semantic-ui-react semantic-ui-css react-invenio-forms
+pnpm add react react-dom semantic-ui-react semantic-ui-css react-invenio-forms
 ```
 
 ## Quick Start
@@ -169,7 +169,7 @@ This library uses PandaCSS for styling, which provides:
 ### Prerequisites
 
 - Node.js 18+ 
-- Yarn 4.x (recommended)
+- pnpm 10.x
 
 ### Setup
 
@@ -178,23 +178,35 @@ This library uses PandaCSS for styling, which provides:
 git clone <repository-url>
 cd invenio-bulk-importer-react
 
-# Install dependencies
-yarn install
-
-# Generate PandaCSS styles
-yarn prepare
+# Install dependencies (also generates PandaCSS styles)
+pnpm install
 
 # Start development server
-yarn dev
+pnpm dev
 ```
 
 ### Available Scripts
 
-- `yarn dev` - Start development server
-- `yarn build` - Build for production
-- `yarn type-check` - Run TypeScript type checking
-- `yarn check` - Run linting, type checking, and dependency sync
-- `yarn preview` - Preview production build
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm watch` - Rebuild `dist/` on changes
+- `pnpm type-check` - Run TypeScript type checking
+- `pnpm check` - Run linting, type checking, and dependency sync
+- `pnpm preview` - Preview production build
+
+### Developing against an Invenio instance
+
+The `watch`, `prelink-dist` and `postlink-dist` scripts are what
+`invenio-cli` expects from a linkable React module. From the instance
+(configured with `javascript_package_manager = pnpm`), run, with an
+absolute path (a relative one is resolved from the instance's assets folder):
+
+```bash
+invenio-cli assets watch-module --link ~/src/react-invenio-bulk-importer
+```
+
+and, in another terminal, `invenio-cli assets watch`. See
+[Integrating React development modules](https://inveniordm.docs.cern.ch/community/code/prerelease-instance-development/#integrating-react-development-modules).
 
 ### Project Structure
 
