@@ -115,9 +115,12 @@ export const FormContent: React.FC<FormContentProps> = ({ progress }) => {
       <Form.Field>
         <label htmlFor={'file-input'}>Metadata File</label>
         <input
+          // Remount on a new serializer so the browser drops the old file too
+          key={values.task.serializer}
           id={'file-input'}
           type='file'
           accept={metadataFormat.accept}
+          disabled={!values.task.serializer}
           onChange={handleFileChange}
           className={styles.fileInput}
         />
@@ -125,8 +128,8 @@ export const FormContent: React.FC<FormContentProps> = ({ progress }) => {
           <p className={styles.helpText}>Selected: {values.metadata.name}</p>
         )}
         <p className={styles.helpText}>
-          Upload a {metadataFormat.label} file containing the records metadata
-          to be imported or deleted.
+          Upload the {metadataFormat.label} file with the records to import or
+          delete.
         </p>
       </Form.Field>
 

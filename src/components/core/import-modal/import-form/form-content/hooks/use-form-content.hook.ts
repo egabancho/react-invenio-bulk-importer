@@ -16,6 +16,7 @@ export const useFormContent = () => {
   );
   const [isLoading, setIsLoading] = useState(true);
   const previousRecordTypeRef = useRef('');
+  const previousSerializerRef = useRef('');
   const { values, submitForm, isSubmitting, isValid, setFieldValue } =
     useFormikContext<ImportFormValues>();
 
@@ -98,6 +99,18 @@ export const useFormContent = () => {
       sanitizeTaskOptions(configs[currentRecordType]?.options)
     );
   }, [configs, setFieldValue, values.task.recordType]);
+
+  // A file chosen for another serializer is in the wrong format for this one.
+  useEffect(() => {
+    const currentSerializer = values.task.serializer;
+
+    if (currentSerializer === previousSerializerRef.current) {
+      return;
+    }
+
+    previousSerializerRef.current = currentSerializer;
+    setFieldValue('metadata', null);
+  }, [setFieldValue, values.task.serializer]);
 
   return {
     configs,
