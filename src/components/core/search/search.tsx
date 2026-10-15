@@ -26,7 +26,8 @@ import { SearchFooter } from './search-footer';
 /** Renders the reusable SearchKit-powered importer search UI. */
 export const Search: React.FC<SearchProps> = ({
   config: userConfig = {},
-  overriddenComponents: userOverrides = {}
+  overriddenComponents: userOverrides = {},
+  refreshSignal
 }) => {
   const exportApi = {
     ...defaultSearchConfig.exportApi,
@@ -107,7 +108,7 @@ export const Search: React.FC<SearchProps> = ({
         searchApi={searchApi}
         initialQueryState={config.initialQueryState}
       >
-        <SearchProvider config={config}>
+        <SearchProvider config={config} refreshSignal={refreshSignal}>
           <div className={styles.searchLayout}>
             <SearchFacets />
             <div className={styles.searchContent}>

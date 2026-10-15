@@ -22,6 +22,8 @@ const IN_PROGRESS_STATES: string[] = [
 
 export const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId }) => {
   const [task, setTask] = useState<InvenioTask | null>(null);
+  const [recordsRefreshSignal, setRecordsRefreshSignal] = useState(0);
+  const refreshRecords = () => setRecordsRefreshSignal(signal => signal + 1);
   const { getStatus, isGettingStatus, runBulkImport, isBulkImporting, error } =
     useImporterTask(taskId, { onStatusChangeSuccess: setTask });
 
@@ -67,7 +69,10 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId }) => {
     (task.records_status?.['serializer validation failed'] || 0);
 
   return (
-    <TaskDetailsProvider taskId={taskId}>
+    <TaskDetailsProvider
+      taskId={taskId}
+      recordsRefreshSignal={recordsRefreshSignal}
+    >
       <Container fluid className={styles.page}>
         {error && (
           <Message negative icon>
@@ -87,10 +92,14 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId }) => {
           successRecords={successRecords}
           isRefreshing={isGettingStatus}
           isRunningTask={isBulkImporting}
-          onRefresh={() => getStatus()}
+          onRefresh={() => {
+            getStatus();
+            refreshRecords();
+          }}
           onRunTask={async () => {
             await runBulkImport();
             await getStatus();
+            refreshRecords();
           }}
         />
 
