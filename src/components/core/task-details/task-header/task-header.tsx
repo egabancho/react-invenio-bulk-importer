@@ -121,6 +121,7 @@ export const TaskHeader: React.FC<TaskHeaderProps> = ({
                   icon='play'
                   onClick={onRunTask}
                   loading={isRunningTask}
+                  disabled={isRunningTask || isRefreshing}
                   content='Run Task'
                 />
               }

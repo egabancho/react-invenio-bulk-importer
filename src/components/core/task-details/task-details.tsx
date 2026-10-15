@@ -1,7 +1,7 @@
 import { Spinner } from '@/components/ui';
 import { useImporterTask } from '@/hooks';
 import { ImporterTaskStates, type InvenioTask } from '@/types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Container, Icon, Message } from 'semantic-ui-react';
 import { TaskDetailsProvider } from './provider';
 import { TaskConfiguration } from './task-configuration';
@@ -32,19 +32,34 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId }) => {
   }, [getStatus]);
 
   // Keep the status current while the backend is still working on the task.
-  const status = task?.status;
+  // Keyed on the task, a new object per fetch, so an unchanged status polls
+  // again.
   useEffect(() => {
-    if (!status || !IN_PROGRESS_STATES.includes(status)) {
+    if (!task || !IN_PROGRESS_STATES.includes(task.status)) {
       return;
     }
     const timer = setTimeout(() => {
-      getStatus();
+      // The hook already shows the error.
+      getStatus().catch(() => undefined);
     }, STATUS_POLL_INTERVAL_MS);
     return () => clearTimeout(timer);
-  }, [status, getStatus]);
+  }, [task, getStatus]);
+
+  // The records change while the task runs, so reload them once it finishes.
+  const status = task?.status;
+  const previousStatus = useRef(status);
+  useEffect(() => {
+    const wasRunning =
+      !!previousStatus.current &&
+      IN_PROGRESS_STATES.includes(previousStatus.current);
+    previousStatus.current = status;
+    if (wasRunning && status && !IN_PROGRESS_STATES.includes(status)) {
+      setRecordsRefreshSignal(signal => signal + 1);
+    }
+  }, [status]);
 
   // Only the first load replaces the page; later refreshes update it in place.
-  if ((isGettingStatus && !task) || isBulkImporting) {
+  if (isGettingStatus && !task) {
     return <Spinner />;
   }
 
@@ -91,7 +106,9 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId }) => {
           errorRecords={errorRecords}
           successRecords={successRecords}
           isRefreshing={isGettingStatus}
-          isRunningTask={isBulkImporting}
+          isRunningTask={
+            isBulkImporting || IN_PROGRESS_STATES.includes(task.status)
+          }
           onRefresh={() => {
             getStatus();
             refreshRecords();
