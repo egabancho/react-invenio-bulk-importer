@@ -19,7 +19,8 @@
       "!**/dist",
       "!**/.turbo",
       "!**/public",
-      "!**/out"
+      "!**/out",
+      "!**/.claude"
     ]
   },
   "formatter": {
