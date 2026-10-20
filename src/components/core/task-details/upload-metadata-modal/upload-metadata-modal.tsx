@@ -2,12 +2,19 @@ import { FileUploader } from '@/components/core/file-uploader';
 import { ProgressLoading } from '@/components/ui';
 import { executeTaskWorkflow, updateTaskContent } from '@/services';
 import type { OrchestrationSteps } from '@/types';
+import { getMetadataFileFormat } from '@/utils';
 import React, { useState } from 'react';
 import { Button, Form, Header, Icon, Modal, Popup } from 'semantic-ui-react';
 import { useTaskDetails } from '../provider';
 import { styles } from './upload-metadata-modal.styles';
 
-export const UploadMetadataModal = () => {
+interface UploadMetadataModalProps {
+  serializer?: string;
+}
+
+export const UploadMetadataModal: React.FC<UploadMetadataModalProps> = ({
+  serializer
+}) => {
   const { taskId } = useTaskDetails();
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
@@ -110,7 +117,7 @@ export const UploadMetadataModal = () => {
                 id={'fileInput'}
                 type='file'
                 onChange={handleFileChange}
-                accept='.csv'
+                accept={getMetadataFileFormat(serializer).accept}
               />
               {uploadFile && (
                 <div className={styles.selectedFileInfo}>

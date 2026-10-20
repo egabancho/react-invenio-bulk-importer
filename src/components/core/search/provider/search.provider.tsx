@@ -1,5 +1,5 @@
 import type { SearchConfig } from '@/types';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { withState } from 'react-searchkit';
 
 /** Context value exposed to search child components. */
@@ -26,13 +26,16 @@ interface SearchProviderComponentProps {
   updateQueryState: (queryState: Record<string, unknown>) => void;
   /** Current React-SearchKit query state. */
   currentQueryState: Record<string, unknown>;
+  /** Re-runs the current search whenever it changes. */
+  refreshSignal?: number;
 }
 
 const SearchProviderComponent: React.FC<SearchProviderComponentProps> = ({
   config,
   children,
   updateQueryState,
-  currentQueryState
+  currentQueryState,
+  refreshSignal
 }) => {
   /**
    * Refreshes the search results by updating the query state.
@@ -44,6 +47,16 @@ const SearchProviderComponent: React.FC<SearchProviderComponentProps> = ({
       queryString: currentQueryState.queryString
     });
   }, [updateQueryState, currentQueryState]);
+
+  // Refresh on a new signal only; the initial search already ran on mount.
+  const lastSignal = useRef(refreshSignal);
+  useEffect(() => {
+    if (refreshSignal === lastSignal.current) {
+      return;
+    }
+    lastSignal.current = refreshSignal;
+    refreshSearch();
+  }, [refreshSignal, refreshSearch]);
 
   return (
     <SearchContext.Provider

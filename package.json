@@ -31,11 +31,14 @@
   "scripts": {
     "dev": "vite",
     "build": "panda codegen && tsc && vite build",
+    "watch": "panda codegen && vite build --watch --mode development",
+    "prelink-dist": "node scripts/prelink-dist.mjs",
+    "postlink-dist": "node -e \"require('node:fs').rmSync('dist/node_modules', { recursive: true, force: true })\"",
     "type-check": "tsc --noEmit",
     "check": "biome check . --fix && tsc --noEmit && syncpack",
     "preview": "vite preview",
     "syncpack": "syncpack fix",
-    "prepare": "yarn build"
+    "prepare": "panda codegen"
   },
   "peerDependencies": {
     "@babel/runtime": "^7.9.0",
@@ -95,5 +98,10 @@
     "js-cookie": "2.2.1",
     "react-searchkit": "^3.0.0"
   },
-  "packageManager": "yarn@4.9.2"
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "packageManager": "pnpm@10.34.7"
 }

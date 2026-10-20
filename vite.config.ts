@@ -7,7 +7,7 @@ import dts from 'vite-plugin-dts';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   server: {
     host: '127.0.0.1',
     port: 3000,
@@ -72,6 +72,8 @@ export default defineConfig({
       }
     },
     // This will inline CSS into your JS bundle
-    cssCodeSplit: false
+    cssCodeSplit: false,
+    // Keep dist/package.json, written by prelink-dist, across watch rebuilds
+    emptyOutDir: mode !== 'development'
   }
-});
+}));

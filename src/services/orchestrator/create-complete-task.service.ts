@@ -3,7 +3,11 @@ import type {
   InvenioTask,
   TaskOrchestrationOptions
 } from '@/types';
-import { addTaskMetadata, createImporterTask } from '../tasks';
+import {
+  addTaskMetadata,
+  createImporterTask,
+  validateImporterTask
+} from '../tasks';
 import { executeTaskWorkflow } from './execute-task-workflow.service';
 import { uploadTaskFiles } from './upload-task-files.service';
 
@@ -46,13 +50,19 @@ export const createCompleteTask = async (
       });
     }
 
-    // Update Task with Metadata and Files
+    // Validation runs in the background; only wait for it when the import
+    // has to follow it.
     if (autoValidate && metadata) {
-      await executeTaskWorkflow(task.id, {
-        autoExecute,
-        onProgress,
-        onError
-      });
+      if (autoExecute) {
+        await executeTaskWorkflow(task.id, {
+          autoExecute,
+          onProgress,
+          onError
+        });
+      } else {
+        onProgress?.('Validating', 0);
+        await validateImporterTask(task.id);
+      }
     }
 
     return task;

@@ -6,6 +6,7 @@ export * from './format-date';
 export * from './format-detail-value';
 export * from './format-option-label';
 export * from './get-csrf-token';
+export * from './get-metadata-file-format';
 export * from './get-status-color';
 export * from './search-utils';
 export * from './task-options';

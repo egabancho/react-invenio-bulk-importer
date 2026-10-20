@@ -27,4 +27,9 @@ export interface SearchProps {
   config?: SearchConfigOverride;
   /** Optional component override registry for react-overridable. */
   overriddenComponents?: OverridableComponents;
+  /**
+   * Re-runs the current search, filters and page kept, whenever this value
+   * changes. Lets a parent refresh the results without remounting them.
+   */
+  refreshSignal?: number;
 }

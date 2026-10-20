@@ -7,7 +7,7 @@ import { TaskRecordItem } from './task-record-item';
 
 /** Renders importer records scoped to the current task details page. */
 export const TaskDetailsRecords = () => {
-  const { taskId } = useTaskDetails();
+  const { taskId, recordsRefreshSignal } = useTaskDetails();
 
   const overriddenComponents = {
     'search.SearchBarRow': () => null,
@@ -35,6 +35,7 @@ export const TaskDetailsRecords = () => {
           showImportModal: false
         }}
         overriddenComponents={overriddenComponents}
+        refreshSignal={recordsRefreshSignal}
       />
     </div>
   );

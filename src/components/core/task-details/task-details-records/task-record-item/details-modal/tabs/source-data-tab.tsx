@@ -7,6 +7,36 @@ interface SourceDataTabProps {
   record: InvenioImporterRecord;
 }
 
+/**
+ * Whether a source value has nothing worth showing.
+ * CSV rows hold strings only; ONIX entries also hold numbers, lists and objects.
+ */
+const isEmptyValue = (value: unknown) => {
+  if (value === null || value === undefined) {
+    return true;
+  }
+  if (typeof value === 'string') {
+    return value.trim() === '';
+  }
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
+  if (typeof value === 'object') {
+    return Object.keys(value).length === 0;
+  }
+  return false;
+};
+
+/** Renders scalars as text and structured values as indented JSON. */
+const renderValue = (value: unknown) =>
+  typeof value === 'object' ? (
+    <pre className={styles.structuredValue}>
+      {JSON.stringify(value, null, 2)}
+    </pre>
+  ) : (
+    String(value)
+  );
+
 export const SourceDataTab: React.FC<SourceDataTabProps> = ({ record }) => {
   return (
     <Table celled striped>
@@ -17,14 +47,16 @@ export const SourceDataTab: React.FC<SourceDataTabProps> = ({ record }) => {
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {Object.entries(record.src_data)
-          .filter(([_, value]) => value && value.trim() !== '')
+        {Object.entries(record.src_data ?? {})
+          .filter(([_, value]) => !isEmptyValue(value))
           .map(([key, value]) => (
             <Table.Row key={key}>
               <Table.Cell>
                 <strong>{key}</strong>
               </Table.Cell>
-              <Table.Cell className={styles.valueCell}>{value}</Table.Cell>
+              <Table.Cell className={styles.valueCell}>
+                {renderValue(value)}
+              </Table.Cell>
             </Table.Row>
           ))}
       </Table.Body>

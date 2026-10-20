@@ -18,44 +18,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
-          
-      - name: Enable Corepack (for Yarn 4)
-        run: corepack enable
+          cache: 'pnpm'
         
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
-        
-      - name: Cache yarn dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-        
-      - name: Install dependencies
-        run: yarn install
-        
-      - name: Generate PandaCSS
-        run: yarn prepare
+      - name: Install dependencies (also generates PandaCSS)
+        run: pnpm install --frozen-lockfile
         
       - name: Type check
-        run: yarn type-check
+        run: pnpm type-check
         
       - name: Lint and format
         run: |
-          yarn biome check . --fix
-          yarn tsc --noEmit
-          yarn syncpack
+          pnpm biome check . --fix
+          pnpm tsc --noEmit
+          pnpm syncpack
         
       - name: Build package
-        run: yarn build
+        run: pnpm build
         
       - name: Publish to NPM
         run: npm publish --provenance --access public

@@ -1,7 +1,7 @@
 import { Spinner } from '@/components/ui';
 import { useImporterTask } from '@/hooks';
-import type { InvenioTask } from '@/types';
-import React, { useEffect, useState } from 'react';
+import { ImporterTaskStates, type InvenioTask } from '@/types';
+import React, { useEffect, useRef, useState } from 'react';
 import { Container, Icon, Message } from 'semantic-ui-react';
 import { TaskDetailsProvider } from './provider';
 import { TaskConfiguration } from './task-configuration';
@@ -13,8 +13,17 @@ export interface TaskDetailsProps {
   taskId: string;
 }
 
+const STATUS_POLL_INTERVAL_MS = 3000;
+
+const IN_PROGRESS_STATES: string[] = [
+  ImporterTaskStates.VALIDATING,
+  ImporterTaskStates.IMPORTING
+];
+
 export const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId }) => {
   const [task, setTask] = useState<InvenioTask | null>(null);
+  const [recordsRefreshSignal, setRecordsRefreshSignal] = useState(0);
+  const refreshRecords = () => setRecordsRefreshSignal(signal => signal + 1);
   const { getStatus, isGettingStatus, runBulkImport, isBulkImporting, error } =
     useImporterTask(taskId, { onStatusChangeSuccess: setTask });
 
@@ -22,7 +31,35 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId }) => {
     getStatus();
   }, [getStatus]);
 
-  if (isGettingStatus || isBulkImporting) {
+  // Keep the status current while the backend is still working on the task.
+  // Keyed on the task, a new object per fetch, so an unchanged status polls
+  // again.
+  useEffect(() => {
+    if (!task || !IN_PROGRESS_STATES.includes(task.status)) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      // The hook already shows the error.
+      getStatus().catch(() => undefined);
+    }, STATUS_POLL_INTERVAL_MS);
+    return () => clearTimeout(timer);
+  }, [task, getStatus]);
+
+  // The records change while the task runs, so reload them once it finishes.
+  const status = task?.status;
+  const previousStatus = useRef(status);
+  useEffect(() => {
+    const wasRunning =
+      !!previousStatus.current &&
+      IN_PROGRESS_STATES.includes(previousStatus.current);
+    previousStatus.current = status;
+    if (wasRunning && status && !IN_PROGRESS_STATES.includes(status)) {
+      setRecordsRefreshSignal(signal => signal + 1);
+    }
+  }, [status]);
+
+  // Only the first load replaces the page; later refreshes update it in place.
+  if (isGettingStatus && !task) {
     return <Spinner />;
   }
 
@@ -47,7 +84,10 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId }) => {
     (task.records_status?.['serializer validation failed'] || 0);
 
   return (
-    <TaskDetailsProvider taskId={taskId}>
+    <TaskDetailsProvider
+      taskId={taskId}
+      recordsRefreshSignal={recordsRefreshSignal}
+    >
       <Container fluid className={styles.page}>
         {error && (
           <Message negative icon>
@@ -66,11 +106,17 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({ taskId }) => {
           errorRecords={errorRecords}
           successRecords={successRecords}
           isRefreshing={isGettingStatus}
-          isRunningTask={isBulkImporting}
-          onRefresh={() => getStatus()}
+          isRunningTask={
+            isBulkImporting || IN_PROGRESS_STATES.includes(task.status)
+          }
+          onRefresh={() => {
+            getStatus();
+            refreshRecords();
+          }}
           onRunTask={async () => {
             await runBulkImport();
             await getStatus();
+            refreshRecords();
           }}
         />
 

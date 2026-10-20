@@ -3,6 +3,8 @@ import { styles } from './task-details.provider.styles';
 
 interface TaskDetailsContextProps {
   taskId: string;
+  /** Changes whenever the task's records should be searched again. */
+  recordsRefreshSignal?: number;
 }
 
 const TaskDetailsContext = createContext<TaskDetailsContextProps | undefined>(
@@ -11,10 +13,11 @@ const TaskDetailsContext = createContext<TaskDetailsContextProps | undefined>(
 
 export const TaskDetailsProvider: React.FC<TaskDetailsContextProps> = ({
   taskId,
+  recordsRefreshSignal,
   children
 }) => {
   return (
-    <TaskDetailsContext.Provider value={{ taskId }}>
+    <TaskDetailsContext.Provider value={{ taskId, recordsRefreshSignal }}>
       <div className={styles.container}>{children}</div>
     </TaskDetailsContext.Provider>
   );
